@@ -1,18 +1,18 @@
-import styles from "./Contact.module.css";
 import { useDispatch } from "react-redux";
-import { deleteContact } from "../../redux/contactsSlice";
+import { deleteContact } from "../../redux/contactsOps";
+import styles from "./Contact.module.css";
 
 const Contact = ({ contact: { id, name, number } }) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
-    dispatch(deleteContact(id));
+    dispatch(deleteContact(id)); // Видаляє контакт за id
   };
 
   return (
     <div className={styles.contact}>
-      <p className={styles.contactName}>{name}</p>
-      <p className={styles.contactNumber}>{number}</p>
+      <p>{name}</p>
+      <p>{number}</p>
       <button className={styles.btn} type="button" onClick={handleDelete}>
         Delete
       </button>

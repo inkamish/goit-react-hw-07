@@ -2,13 +2,16 @@ import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useId } from "react";
 import styles from "./ContactForm.module.css";
-import { useDispatch } from "react-redux";
-import { addContact } from "../../redux/contactsSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addContactToServer } from "../../redux/contactsOps";
+import { selectIsLoading, selectError } from "../../redux/selectors";
 
 const ContactForm = () => {
   const nameId = useId();
   const numberId = useId();
   const dispatch = useDispatch();
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -26,20 +29,25 @@ const ContactForm = () => {
     number: "",
   };
 
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      await dispatch(
+        addContactToServer({
+          name: values.name,
+          number: values.number,
+        })
+      ).unwrap();
+      resetForm();
+    } catch (error) {
+      console.error("Failed to add contact:", error);
+    }
+  };
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values, { resetForm }) => {
-        dispatch(
-          addContact({
-            id: crypto.randomUUID(),
-            name: values.name,
-            number: values.number,
-          })
-        );
-        resetForm();
-      }}
+      onSubmit={handleSubmit}
     >
       <Form autoComplete="off" className={styles.form}>
         <div className={styles.formElement}>
@@ -63,9 +71,11 @@ const ContactForm = () => {
             component="span"
           />
         </div>
-        <button type="submit" className={styles.btn}>
+        <button type="submit" className={styles.btn} disabled={isLoading}>
           Add Contact
         </button>
+
+        {error && <p className={styles.error}>Error: {error}</p>}
       </Form>
     </Formik>
   );
